@@ -10,6 +10,7 @@ Results are saved in the DynamoDB table named in the TABLE_NAME environment vari
 """
 import ast
 import base64
+from functools import lru_cache
 import json
 import math
 import os
@@ -37,14 +38,14 @@ def evaluate(expression, mode="deg"):
         raise CalcError("Nothing to calculate")
     try:
         tree = ast.parse(text, mode="eval")
-    except SyntaxError:
-        raise CalcError("That doesn't look like a valid expression")
+    except SyntaxError as exc:
+        raise CalcError("That doesn't look like a valid expression") from exc
     try:
         result = _eval(tree.body, mode)
-    except ZeroDivisionError:
-        raise CalcError("Cannot divide by zero")
-    except OverflowError:
-        raise CalcError("Result is too big")
+    except ZeroDivisionError as exc:
+        raise CalcError("Cannot divide by zero") from exc
+    except OverflowError as exc:
+        raise CalcError("Result is too big") from exc
     if isinstance(result, complex) or math.isnan(result) or math.isinf(result):
         raise CalcError("Result is too big or undefined")
     result = float(f"{result:.12g}")  # tidy: sin(180) gives 0, not 1.2e-16
@@ -110,21 +111,17 @@ def format_number(value):
     return f"{value:.12g}"
 
 
-# --------------------------------------------------------------------- DynamoDB
-_table = None
-
-
+ # --------------------------------------------------------------------- DynamoDB
+@lru_cache(maxsize=1)
 def get_table():
     """Connect to DynamoDB the first time we need it (boto3 is built into Lambda)."""
-    global _table
-    if _table is None:
-        import boto3
-        _table = boto3.resource("dynamodb").Table(TABLE_NAME)
-    return _table
+    import boto3  # pylint: disable=import-error  # provided by the Lambda runtime
+    return boto3.resource("dynamodb").Table(TABLE_NAME)
 
 
 # --------------------------------------------------------------------- the API
 def reply(status, body):
+    """Build an API Gateway response with JSON and CORS headers."""
     return {
         "statusCode": status,
         "headers": {
@@ -138,6 +135,7 @@ def reply(status, body):
 
 
 def read_body(event):
+    """Decode and parse the JSON request body from an API Gateway event."""
     raw = event.get("body") or "{}"
     if event.get("isBase64Encoded"):
         raw = base64.b64decode(raw).decode("utf-8")
@@ -145,6 +143,7 @@ def read_body(event):
 
 
 def user_id_from(event, body=None):
+    """Return the truncated user ID from the request body or query string."""
     user_id = ((body or {}).get("user_id")
                or (event.get("queryStringParameters") or {}).get("user_id")
                or "anonymous")
@@ -152,6 +151,7 @@ def user_id_from(event, body=None):
 
 
 def calculate(event):
+    """Evaluate a calculation request, save the result, and return a response."""
     try:
         body = read_body(event)
     except (ValueError, UnicodeDecodeError):
@@ -180,6 +180,7 @@ def calculate(event):
 
 
 def get_history(event):
+    """Return the most recent calculation history for the requested user."""
     response = get_table().query(
         KeyConditionExpression="user_id = :u",
         ExpressionAttributeValues={":u": user_id_from(event)},
@@ -193,6 +194,7 @@ def get_history(event):
 
 
 def clear_history(event):
+    """Delete all saved calculations for the requested user."""
     table = get_table()
     user_id = user_id_from(event)
     deleted = 0
@@ -224,6 +226,7 @@ def lambda_handler(event, context):
         if method == "DELETE" and path.endswith("/history"):
             return clear_history(event)
         return reply(404, {"error": f"No route for {method} {path}"})
-    except Exception as err:  # anything unexpected: log it, don't leak details
+    except (ValueError, TypeError, KeyError, AttributeError, OSError) as err:
+        # Handle expected request and infrastructure failures without exposing details.
         print("ERROR:", repr(err))
         return reply(500, {"error": "Something went wrong on the server"})

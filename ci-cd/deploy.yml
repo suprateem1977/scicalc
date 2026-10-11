@@ -1,0 +1,64 @@
+# .github/workflows/deploy.yml   (lives in ci-cd/ until Part 11, then moves here)
+# Every push to main: test the backend, then (only if tests pass) deploy everything to AWS.
+name: Test and deploy SciCalc
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:        # adds a "Run workflow" button in the Actions tab
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    name: 1 · Run the tests
+    runs-on: ubuntu-latest
+    steps:
+      - name: Get the code
+        uses: actions/checkout@v4
+
+      - name: Install Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install pytest
+        run: pip install pytest
+
+      - name: Run the backend tests
+        run: pytest -q backend
+
+  deploy:
+    name: 2 · Deploy to AWS
+    needs: test               # never deploy code that failed its tests
+    runs-on: ubuntu-latest
+    steps:
+      - name: Get the code
+        uses: actions/checkout@v4
+
+      - name: Log in to AWS with the calc-deployer keys
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ vars.AWS_REGION }}
+
+      - name: Point the website at the API
+        run: |
+          echo 'window.APP_CONFIG = { API_URL: "${{ vars.API_URL }}" };' > frontend/config.js
+          cat frontend/config.js
+
+      - name: Upload the website to S3
+        run: aws s3 sync frontend/ "s3://${{ vars.S3_BUCKET }}" --delete
+
+      - name: Upload the new Lambda code
+        run: |
+          cd backend
+          zip ../function.zip lambda_function.py
+          cd ..
+          aws lambda update-function-code --function-name "${{ vars.LAMBDA_NAME }}" --zip-file fileb://function.zip
+          aws lambda wait function-updated --function-name "${{ vars.LAMBDA_NAME }}"
+
+      - name: Clear the CloudFront cache so visitors get the new version
+        run: aws cloudfront create-invalidation --distribution-id "${{ vars.CLOUDFRONT_ID }}" --paths "/*"

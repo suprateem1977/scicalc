@@ -1,0 +1,29 @@
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Sid": "ListTheWebsiteBucket",
+      "Effect": "Allow",
+      "Action": "s3:ListBucket",
+      "Resource": "arn:aws:s3:::YOUR-BUCKET-NAME"
+    },
+    {
+      "Sid": "UploadAndRemoveWebsiteFiles",
+      "Effect": "Allow",
+      "Action": ["s3:GetObject", "s3:PutObject", "s3:DeleteObject"],
+      "Resource": "arn:aws:s3:::YOUR-BUCKET-NAME/*"
+    },
+    {
+      "Sid": "UpdateTheLambdaCode",
+      "Effect": "Allow",
+      "Action": ["lambda:UpdateFunctionCode", "lambda:GetFunction", "lambda:GetFunctionConfiguration"],
+      "Resource": "arn:aws:lambda:ap-south-1:YOUR-ACCOUNT-ID:function:calc-api"
+    },
+    {
+      "Sid": "ClearTheCloudFrontCache",
+      "Effect": "Allow",
+      "Action": "cloudfront:CreateInvalidation",
+      "Resource": "arn:aws:cloudfront::YOUR-ACCOUNT-ID:distribution/YOUR-DISTRIBUTION-ID"
+    }
+  ]
+}

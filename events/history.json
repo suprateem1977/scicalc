@@ -1,0 +1,5 @@
+{
+  "rawPath": "/history",
+  "requestContext": { "http": { "method": "GET" } },
+  "queryStringParameters": { "user_id": "test-user" }
+}

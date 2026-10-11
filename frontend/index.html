@@ -1,0 +1,83 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>SciCalc · Scientific Calculator</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <main class="app">
+    <section class="calc" aria-label="Scientific calculator">
+      <header class="calc-top">
+        <div class="brand">Sci<span>Calc</span></div>
+        <span id="status" class="status">💻 Running in your browser</span>
+        <button id="modeBtn" class="mode" title="Switch between degrees and radians">DEG</button>
+      </header>
+
+      <div class="display" aria-live="polite">
+        <div id="expr" class="expr">&nbsp;</div>
+        <div id="result" class="result">0</div>
+      </div>
+
+      <div class="keys">
+        <button class="k fn" data-insert="sin(">sin</button>
+        <button class="k fn" data-insert="cos(">cos</button>
+        <button class="k fn" data-insert="tan(">tan</button>
+        <button class="k fn" data-insert="(">(</button>
+        <button class="k fn" data-insert=")">)</button>
+
+        <button class="k fn" data-insert="asin(">sin⁻¹</button>
+        <button class="k fn" data-insert="acos(">cos⁻¹</button>
+        <button class="k fn" data-insert="atan(">tan⁻¹</button>
+        <button class="k fn" data-insert="^">xʸ</button>
+        <button class="k fn" data-insert="sqrt(">√</button>
+
+        <button class="k fn" data-insert="ln(">ln</button>
+        <button class="k fn" data-insert="log(">log</button>
+        <button class="k fn" data-insert="pi">π</button>
+        <button class="k fn" data-insert="e">e</button>
+        <button class="k fn" data-insert="^2">x²</button>
+
+        <button class="k" data-insert="7">7</button>
+        <button class="k" data-insert="8">8</button>
+        <button class="k" data-insert="9">9</button>
+        <button class="k op" data-insert="/">÷</button>
+        <button class="k danger" data-action="clear">AC</button>
+
+        <button class="k" data-insert="4">4</button>
+        <button class="k" data-insert="5">5</button>
+        <button class="k" data-insert="6">6</button>
+        <button class="k op" data-insert="*">×</button>
+        <button class="k fn" data-action="back">⌫</button>
+
+        <button class="k" data-insert="1">1</button>
+        <button class="k" data-insert="2">2</button>
+        <button class="k" data-insert="3">3</button>
+        <button class="k op" data-insert="-">−</button>
+        <button class="k fn" data-action="ans">Ans</button>
+
+        <button class="k" data-insert="0">0</button>
+        <button class="k" data-insert=".">.</button>
+        <button class="k fn" data-insert="abs(">|x|</button>
+        <button class="k op" data-insert="+">+</button>
+        <button class="k equals" data-action="equals">=</button>
+      </div>
+    </section>
+
+    <aside class="history" aria-label="History">
+      <header>
+        <h2>History</h2>
+        <button id="clearHistory" class="link">Clear</button>
+      </header>
+      <ul id="historyList"></ul>
+      <p id="historySource" class="source">Saved in this browser only</p>
+    </aside>
+  </main>
+
+  <!-- Order matters: settings first, then the maths engine, then the app -->
+  <script src="config.js"></script>
+  <script src="calculator.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>

@@ -1,0 +1,101 @@
+/* style.css - the look of SciCalc */
+:root {
+  --bg1: #001a19;
+  --bg2: #0c4e39;
+  --card: rgba(255, 255, 255, 0.06);
+  --card-border: rgba(255, 255, 255, 0.12);
+  --key: rgba(255, 255, 255, 0.08);
+  --key-hover: rgba(255, 255, 255, 0.16);
+  --fn: rgba(51, 195, 117, 0.12);
+  --op: rgba(51, 195, 117, 0.28);
+  --accent: #33c375;
+  --text: #eafff5;
+  --dim: #9cc7b6;
+  --danger: #ff7a7a;
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  color: var(--text);
+  background: radial-gradient(circle at 20% 10%, var(--bg2), var(--bg1) 60%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px 16px;
+}
+
+.app {
+  display: grid;
+  grid-template-columns: minmax(0, 420px) minmax(0, 300px);
+  gap: 20px;
+  width: 100%;
+  max-width: 740px;
+}
+
+.calc, .history {
+  background: var(--card);
+  border: 1px solid var(--card-border);
+  border-radius: 24px;
+  padding: 20px;
+  backdrop-filter: blur(12px);
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.35);
+}
+
+.calc-top { display: flex; align-items: center; gap: 10px; margin-bottom: 14px; }
+.brand { font-weight: 800; font-size: 20px; letter-spacing: 0.02em; }
+.brand span { color: var(--accent); }
+.status { font-size: 12px; color: var(--dim); margin-left: auto; }
+.status.cloud { color: var(--accent); }
+.mode {
+  background: var(--accent); color: #002726; border: none; border-radius: 999px;
+  padding: 6px 12px; font-weight: 800; font-size: 12px; cursor: pointer;
+}
+
+.display {
+  background: rgba(0, 0, 0, 0.35);
+  border-radius: 16px;
+  padding: 16px 18px;
+  text-align: right;
+  margin-bottom: 16px;
+  min-height: 104px;
+  overflow: hidden;
+}
+.expr { color: var(--dim); font-size: 16px; min-height: 22px; word-break: break-all; }
+.result { font-size: 40px; font-weight: 700; margin-top: 6px; word-break: break-all; }
+.result.error { color: var(--danger); font-size: 18px; margin-top: 16px; }
+
+.keys { display: grid; grid-template-columns: repeat(5, 1fr); gap: 10px; }
+.k {
+  background: var(--key); color: var(--text); border: none; border-radius: 14px;
+  height: 52px; font-size: 18px; font-family: inherit; cursor: pointer;
+  transition: transform 0.06s ease, background 0.15s ease;
+}
+.k:hover { background: var(--key-hover); }
+.k:active { transform: scale(0.95); }
+.k.fn { background: var(--fn); font-size: 15px; }
+.k.op { background: var(--op); font-weight: 700; }
+.k.danger { color: var(--danger); font-weight: 700; }
+.k.equals { background: var(--accent); color: #002726; font-weight: 800; font-size: 22px; }
+
+.history header { display: flex; align-items: center; justify-content: space-between; }
+.history h2 { margin: 0; font-size: 16px; }
+.link { background: none; border: none; color: var(--accent); cursor: pointer; font-size: 13px; }
+#historyList { list-style: none; padding: 0; margin: 14px 0; max-height: 470px; overflow-y: auto; }
+#historyList li {
+  display: flex; flex-direction: column; gap: 2px; padding: 10px 12px; border-radius: 12px;
+  cursor: pointer; font-size: 14px;
+}
+#historyList li:hover { background: var(--key); }
+#historyList li.empty { color: var(--dim); cursor: default; }
+.h-expr { color: var(--dim); word-break: break-all; }
+.h-result { font-weight: 700; font-size: 16px; }
+.source { font-size: 12px; color: var(--dim); margin: 0; }
+
+@media (max-width: 760px) {
+  .app { grid-template-columns: minmax(0, 1fr); max-width: 440px; }
+  .k { height: 48px; font-size: 16px; }
+}

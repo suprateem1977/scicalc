@@ -1,0 +1,25 @@
+# .github/workflows/test.yml
+# Our first workflow: every push runs the backend tests on a fresh computer in the cloud.
+name: Run the tests
+
+on:
+  push:
+  workflow_dispatch:        # adds a "Run workflow" button in the Actions tab
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Get the code
+        uses: actions/checkout@v4
+
+      - name: Install Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install pytest
+        run: pip install pytest
+
+      - name: Run the backend tests
+        run: pytest -q backend

@@ -211,7 +211,7 @@ def clear_history(event):
     return reply(200, {"deleted": deleted})
 
 
-def lambda_handler(event, context):
+def lambda_handler(event, _context):
     """The function AWS Lambda calls. Handler setting: lambda_function.lambda_handler"""
     method = event.get("requestContext", {}).get("http", {}).get("method", "GET")
     path = event.get("rawPath", "/")

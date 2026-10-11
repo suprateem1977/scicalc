@@ -21,8 +21,9 @@ class FakeTable:
 
     def query(self, ExpressionAttributeValues, ScanIndexForward=True, Limit=None, **kwargs):
         user = ExpressionAttributeValues[":u"]
-        found = sorted((i for i in self.items if i["user_id"] == user), key=lambda i: i["created_at"],
-                       reverse=not ScanIndexForward)
+        found = [i for i in self.items if i["user_id"] == user]
+        if not ScanIndexForward:
+            found.reverse()
         return {"Items": found[:Limit] if Limit else found}
 
     def batch_writer(self):

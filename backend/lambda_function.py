@@ -14,6 +14,7 @@ import json
 import math
 import os
 from datetime import datetime, timezone
+import time
 
 TABLE_NAME = os.environ.get("TABLE_NAME", "calc-history")
 MAX_LENGTH = 200          # longest expression we accept
@@ -169,6 +170,7 @@ def calculate(event):
     item = {
         "user_id": user_id_from(event, body),
         "created_at": datetime.now(timezone.utc).isoformat(),
+        "sequence": time.time_ns(),
         "expression": expression,
         "result": format_number(result),
         "mode": mode,
@@ -184,6 +186,9 @@ def get_history(event):
         ScanIndexForward=False,   # newest first
         Limit=20,
     )
+    print("HISTORY ITEMS:")
+    for item in response.get("Items", []):
+        print(item["expression"], item["created_at"])
     return reply(200, {"items": response.get("Items", [])})
 
 

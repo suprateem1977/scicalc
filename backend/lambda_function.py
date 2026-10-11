@@ -16,6 +16,7 @@ import math
 import os
 from datetime import datetime, timezone
 import time
+from decimal import Decimal
 
 TABLE_NAME = os.environ.get("TABLE_NAME", "calc-history")
 MAX_LENGTH = 200          # longest expression we accept
@@ -119,6 +120,12 @@ def get_table():
     return boto3.resource("dynamodb").Table(TABLE_NAME)
 
 
+def decimal_serializer(obj):
+    if isinstance(obj, Decimal):
+        return float(obj)
+    raise TypeError(f"Object of type {type(obj).__name__} is not JSON serializable")
+
+
 # --------------------------------------------------------------------- the API
 def reply(status, body):
     """Build an API Gateway response with JSON and CORS headers."""
@@ -130,7 +137,7 @@ def reply(status, body):
             "Access-Control-Allow-Headers": "content-type",
             "Access-Control-Allow-Methods": "GET,POST,DELETE,OPTIONS",
         },
-        "body": json.dumps(body),
+        "body": json.dumps(body, default=decimal_serializer)
     }
 
 

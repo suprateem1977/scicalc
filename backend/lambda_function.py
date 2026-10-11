@@ -115,7 +115,7 @@ def format_number(value):
 @lru_cache(maxsize=1)
 def get_table():
     """Connect to DynamoDB the first time we need it (boto3 is built into Lambda)."""
-    import boto3  # pylint: disable=import-error  # provided by the Lambda runtime
+    import boto3  # pylint: disable=import-error,import-outside-toplevel  # provided by the Lambda runtime
     return boto3.resource("dynamodb").Table(TABLE_NAME)
 
 
